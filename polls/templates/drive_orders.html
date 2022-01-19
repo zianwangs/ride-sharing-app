@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title></title>
+    <style>
+        h2 {
+            text-align:left;
+            width: 87%;
+            margin-top: 30px;
+            margin-left: 80px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid gray;
+        }
+        ul {
+            font-size: 20px;
+            list-style: none;
+            width: 800px;
+            border: 1px solid gray;
+            margin-left: 200px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        li {
+            display: inline;
+        }
+        #complete_ {
+            font-size: 20px;
+            width: 200px;
+            height: 50px;
+            background-color: black;
+            color: white;
+            
+        }
+        button:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="orders_body">
+    <h2>Confirmed:</h2>
+    <ul v-for='item in confirmed_list'>
+        <li>Order Serial Number: #{item.id}</li> 
+        <li>Arrival Time: {item.arrival_time}</li>
+        <li>Status:<b style="color:blue"> {item.status}</b></li>
+        
+        <li>Passenger Number: {item.passenger_num}</li>
+        <li>Is exclusive: {item.is_exclusive}</li>
+        <li>Vehicle Type: {item.car_type}</li>
+        <li>Special info: {item.special_info}</li>
+        <button id="complete_" @click="complete(item.id)">Complete</button>
+    </ul>
+    <br>
+    
+    </div>
+    <script>
+        var app = new Vue({
+            el:"#orders_body",
+            delimiters: ['{', '}'],
+            data:{
+                confirmed_list: [],
+            },
+            mounted: function() {
+                that = this;
+                axios.get("/drive_orders").then(function(response) {
+                    if (response.data.status_code == 1) {
+                        alert("Please log in first!")
+                        location.href = 'login.html'
+                    } else if (response.data.status_code == 2) {
+                        alert("You are not a driver yet, please register first!")
+                        location.href = 'driver_register.html'
+                    } else {
+                        that.confirmed_list = []
+                        for (i = 0; i < response.data.length; ++i) {
+                            response.data[i].fields["id"] = response.data[i].pk
+                            if (response.data[i].fields.status == 4) {
+                                response.data[i].fields.status = "Confirmed"
+                                that.confirmed_list.push(response.data[i].fields)
+                            }
+                        }
+                    }
+                }).catch(function(err) {
+                    alert('Error');
+                });
+            },
+            methods: {
+                request: function() {
+                    that = this;
+                    axios.get().then(function(response) {
+                        if (response.data.status_code != 0) {
+                            alert("Please log in first!")
+                        } else {
+                            alert("Order has been published!")
+                        }
+                    }).catch(function(err) {
+                        alert('Error');
+                    });
+                },
+                complete: function(oid) {
+                    that = this;
+                    axios.get("complete/"+oid).then(function(response) {
+                        if (response.data.status_code == 1) {
+                            alert("Please log in first!");
+                            location.href = "login.html"
+                        } else if (response.data.status_code == 2){
+                            alert("You are not a driver yet, please register first!")
+                            location.href = "driver_register.html"
+                        } else {
+                            alert("Order completed!")
+                            location.href = "drive_orders.html"
+                            
+                        }
+                    }).catch(function(err) {
+                        alert('Error');
+                    });
+                }
+            },
+            
+
+        });
+    </script>
+</body>
+</html>
