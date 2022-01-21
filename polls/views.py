@@ -5,6 +5,8 @@ from .models import User, Driver, Ride, Transaction
 from django.core import serializers
 from datetime import datetime
 from django.db.models import Q
+from django.core.mail import send_mail
+
 def user_has_logged_in(request):
     return 'username' in request.session
 def string_to_datetime(string):
@@ -116,11 +118,17 @@ def confirm(request, order_id):
         return JsonResponse({"status_code":2})
     driver = Driver.objects.get(user_id = user.id)
     driver.number_of_incomplete_orders += 1
-    driver.save()
     ride = Ride.objects.get(pk = order_id)
     ride.status = 4
     ride.driver = driver
+    transactions = Transaction.objects.filter(ride = ride)
+    try:
+        for transaction in transactions:
+            send_mail('[WeRide]: Your order is confirmed!', 'Dear ' + transaction.user.username + ',\n\n    Your order to ' + transaction.ride.destination+' has just been confirmed, enjoy your trip!\n\nWeRide Team', '2356184200@qq.com', [transaction.user.email], fail_silently=False,)
+    except:
+        pass
     ride.save()
+    driver.save()
     return HttpResponse()
 def complete(request, order_id):
     if not user_has_logged_in(request):
@@ -206,8 +214,28 @@ def aux_get_order_info(request):
     user = User.objects.get(username = request.session['username'])
     order_id = request.session['order_to_be_edited']
     order = Ride.objects.get(pk = order_id)
-    order.passenger_num = Transaction.objects.get(ride = order, user = user).passenger_num
+    transaction = Transaction.objects.get(ride = order, user = user)
+    order.passenger_num = transaction.passenger_num
+    role = ""
+    if transaction.role == False:
+        role = "0"
+    else:
+        role = "1"
     json = serializers.serialize('json', [order,])
+    json = json[:-3]
+    json = json + ', "role": "' + role + '"}}]'
+    print(json)
+    return HttpResponse(json)
+def aux_get_order_info__view(request):
+    if not user_has_logged_in(request):
+        return JsonResponse({"status_code":1})
+    user = User.objects.get(username = request.session['username'])
+    order_id = request.session['order_to_be_viewed']
+    order = Ride.objects.get(pk = order_id)
+    json = serializers.serialize('json', [order,])
+    if order.status == 4:
+        json = json[:-3]
+        json = json + ' , "real_name": "' + order.driver.real_name + '" , "licence_number": "' + order.driver.licence_number + '"}}]'
     return HttpResponse(json)
 def change_order_with_special_info(request, order_id, destination, arrival_time, passenger_num, shared, car_type, special_info):
     if not user_has_logged_in(request):
@@ -263,4 +291,25 @@ def change_user_info(request, password, email):
     user.email = email
     user.save()
     return HttpResponse()
+def view(request, order_id):
+    if not user_has_logged_in(request):
+        return JsonResponse({"status_code":1})
+    user = User.objects.get(username = request.session['username'])
+    request.session['order_to_be_viewed'] = order_id
+    return HttpResponse()
+def open_order_details_html(request):
+    if not user_has_logged_in(request):
+        return redirect("login.html")
+    return render(request, "open_order_details.html")
+def confirmed_order_details_html(request):
+    if not user_has_logged_in(request):
+        return redirect("login.html")
+    return render(request, "confirmed_order_details.html")
+def driver_order_details_html(request):
+    if not user_has_logged_in(request):
+        return JsonResponse({"status_code":1})
+    user = User.objects.get(username = request.session['username'])
+    if not user.is_driver:
+        return JsonResponse({"status_code":2})
+    return render(request, "driver_order_details.html")
 # Create your views here.

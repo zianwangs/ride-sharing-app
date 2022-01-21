@@ -20,19 +20,26 @@
         ul {
             font-size: 20px;
             list-style: none;
-            width: 800px;
+            width: 900px;
             border: 1px solid gray;
-            margin-left: 200px;
+            margin-left: 120px;
             border-radius: 10px;
             margin-top: 20px;
+            text-align: left;
+            height: 50px;
+            padding-left: 20px;
+            padding-top: 30px;
         }
         li {
             display: inline;
         }
-        #complete_ {
-            font-size: 20px;
-            width: 200px;
-            height: 50px;
+        #view_ {
+            float: right;
+            margin-right: 25px;
+            margin-top: -12px;
+            font-size: 19px;
+            width: 120px;
+            height: 45px;
             background-color: black;
             color: white;
             
@@ -40,21 +47,21 @@
         button:hover {
             cursor: pointer;
         }
+
+        #orders_body {
+            padding-bottom: 30px;
+        }
     </style>
 </head>
 <body>
     <div id="orders_body">
     <h2>Confirmed:</h2>
     <ul v-for='item in confirmed_list'>
-        <li>Order Serial Number: #{item.id}</li> 
-        <li>Arrival Time: {item.arrival_time}</li>
+        <li>Order No: #{item.id},</li> 
+        <li>Dest.: {item.destination},</li> 
+        <li>Arr. Time: {item.arrival_time},</li>
         <li>Status:<b style="color:blue"> {item.status}</b></li>
-        
-        <li>Passenger Number: {item.passenger_num}</li>
-        <li>Is exclusive: {item.is_exclusive}</li>
-        <li>Vehicle Type: {item.car_type}</li>
-        <li>Special info: {item.special_info}</li>
-        <button id="complete_" @click="complete(item.id)">Complete</button>
+        <button id="view_" @click="view(item.id)">View</button>
     </ul>
     <br>
     
@@ -90,31 +97,15 @@
                 });
             },
             methods: {
-                request: function() {
+                view: function(oid) {
                     that = this;
-                    axios.get().then(function(response) {
-                        if (response.data.status_code != 0) {
-                            alert("Please log in first!")
-                        } else {
-                            alert("Order has been published!")
-                        }
-                    }).catch(function(err) {
-                        alert('Error');
-                    });
-                },
-                complete: function(oid) {
-                    that = this;
-                    axios.get("complete/"+oid).then(function(response) {
+                    axios.get("view/"+oid).then(function(response) {
                         if (response.data.status_code == 1) {
-                            alert("Please log in first!");
-                            location.href = "login.html"
-                        } else if (response.data.status_code == 2){
+                            alert("Please log in first!")
+                        } else if (response.data.status_code == 2) {
                             alert("You are not a driver yet, please register first!")
-                            location.href = "driver_register.html"
                         } else {
-                            alert("Order completed!")
-                            location.href = "drive_orders.html"
-                            
+                            location.href = "/driver_order_details.html"
                         }
                     }).catch(function(err) {
                         alert('Error');

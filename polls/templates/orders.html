@@ -20,22 +20,32 @@
         ul {
             font-size: 20px;
             list-style: none;
-            width: 800px;
+            width: 900px;
             border: 1px solid gray;
-            margin-left: 200px;
+            margin-left: 120px;
             border-radius: 10px;
             margin-top: 20px;
+            text-align: left;
+            height: 50px;
+            padding-left: 20px;
+            padding-top: 30px;
         }
         li {
             display: inline;
         }
         #edit_ {
-            font-size: 20px;
-            width: 180px;
+            float: right;
+            margin-right: 25px;
+            margin-top: -12px;
+            font-size: 19px;
+            width: 120px;
             height: 45px;
             background-color: black;
             color: white;
             
+        }
+        #orders_body {
+            padding-bottom: 30px;
         }
         button:hover {
             cursor: pointer;
@@ -46,29 +56,20 @@
     <div id="orders_body">
     <h2>Open:</h2>
     <ul v-for='item in open_list'>
-        <li>Order Serial Number: #{item.id}</li> 
-        <li>Destination: #{item.destination}</li> 
-        <li>Arrival Time: {item.arrival_time}</li>
+        <li>Order No: #{item.id},</li> 
+        <li>Dest.: {item.destination},</li> 
+        <li>Arr. Time: {item.arrival_time},</li>
         <li>Status:<b style="color:green"> {item.status}</b></li>
-        
-        <li>Passenger Number: {item.passenger_num}</li>
-        <li>Is exclusive: {item.is_exclusive}</li>
-        <li>Vehicle Type: {item.car_type}</li>
-        <li>Special info: {item.special_info}</li>
-        <button id="edit_" @click="edit(item.id)">Edit</button>
+        <button id="edit_" @click="view(item.id, false)">View</button>
     </ul>
     <br>
     <h2>Confirmed:</h2>
     <ul v-for='item in confirmed_list'>
-        <li>Order Serial Number: #{item.id}</li> 
-        <li>Arrival Time: {item.arrival_time}</li>
+        <li>Order No: #{item.id},</li> 
+        <li>Dest.: {item.destination},</li> 
+        <li>Arr. Time: {item.arrival_time},</li>
         <li>Status:<b style="color:blue"> {item.status}</b></li>
-        
-        <li>Passenger Number: {item.passenger_num}</li>
-        <li>Is exclusive: {item.is_exclusive}</li>
-        <li>Vehicle Type: {item.car_type}</li>
-        <li>Special info: {item.special_info}</li>
-        
+        <button id="edit_" @click="view(item.id, true)">View</button>
     </ul>
     
     </div>
@@ -105,13 +106,14 @@
                 });
             },
             methods: {
-                edit: function(oid) {
+                view: function(oid, is_confirmed) {
                     that = this;
-                    axios.get("edit/"+oid).then(function(response) {
+                    axios.get("view/"+oid).then(function(response) {
                         if (response.data.status_code == 1) {
                             alert("Please log in first!")
                         } else {
-                            location.href = "/edit_order.html"
+                            if (!is_confirmed) location.href = "/open_order_details.html"
+                            else location.href = "/confirmed_order_details.html"
                         }
                     }).catch(function(err) {
                         alert('Error');

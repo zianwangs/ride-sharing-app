@@ -11,7 +11,7 @@
     <style>
         h1 {
             margin-top: 20px;
-            margin-left: 30px;
+            margin-left: 15px;
 
         }
         input {
@@ -24,8 +24,8 @@
             margin-left: 50px;
             height: 200px;
             width: 980px;
-            border-bottom: 1px solid gray;
             font-size: 21px;
+            padding-bottom: 40px;
         }
         button {
             
@@ -43,17 +43,21 @@
         #result {
             margin-top: 50px;
             height: 500px;
-            background-color: #aaa;
         }
         #info {
-            display: inline;
+            width: 900px;
+            margin-left: 100px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid gray;
         }
         li {
+            margin-top: 20px;
+            margin-left: 50px;
             display: inline;
             list-style: none;
         }
         .date_input {
-            width: 200px;
+            width: 230px;
         }
         .num_input {
             width: 80px;
@@ -65,16 +69,19 @@
             cursor: pointer;
         }
         #result {
-            margin-top: 50px;
-            height: 500px;
+            margin-top: 20px;
+            margin-left: 100px;
             background-color: white;
+            padding-bottom: 40px;
         }
         ul {
+            padding-top: 20px;
+            padding-left: -10px;
             font-size: 20px;
             list-style: none;
-            width: 800px;
-            border: 1px solid gray;
-            margin-left: 0px;
+            width: 850px;
+            border: 2px solid gray;
+            margin-left: 25px;
             border-radius: 10px;
             margin-top: 20px;
         }
@@ -82,6 +89,11 @@
             font-size: 20px;
             width: 200px;
             height: 50px;
+            width: 96%;
+            margin-left: 15px;
+            padding: auto;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -89,36 +101,28 @@
 <body>
     
     <div id="share_search">
-        <div id="info">
-        <li>Destination: &nbsp;<input type="text" v-model="destination" required maxlength="50">&nbsp;
-        Earliest Arrival: &nbsp;<input type="datetime-local" v-model="earliest_time" class="date_input"required>
-        Latest Arrival: &nbsp;<input type="datetime-local" v-model="latest_time" class="date_input" required><br>
-    </li> &nbsp;&nbsp;&nbsp;
-            Do you have any requirement on vehicle type? &nbsp;<select v-model="car_type" required>
-                <option selected value="Unspecified">Unspecified</option>
-                <option value="Sedan">Sedan</option>
-                <option value="SUV">SUV</option>
-                <option value="Sports Car">Sports Car</option>
-                <option value="Convertible">Convertible</option>
-                <option value="Truck">Truck</option>
-                <option value="Minivan">Minivan</option>
-            </select><br>
-            Special Info: &nbsp;<input id="special_info" v-model="special_info">  <button @click="search">Find Shared Rides</button>
-        </li>
-    </div>
+        <div id="info"> 
+        <li>Destination: &nbsp;<input type="text" v-model="destination" required maxlength="50">&nbsp;&nbsp;&nbsp;&nbsp;
+        Earliest Arrival: &nbsp;<input type="datetime-local" v-model="earliest_time" class="date_input"required></li>
+        <br>   
+        <li>Latest Arrival: &nbsp;<input type="datetime-local" v-model="latest_time" class="date_input" required>
+        <button @click="search">Find Shared Rides</button></li>
+        </div>
   
-    <div id="result">
-        You found {orders.length} orders.<br>
-        <ul v-for='item in orders'>
-            <li>Order ID: {item.id}</li>
-            <li>Arrival Time: {item.arrival_time}</li>
-            <li>Passenger Number: {item.passenger_num}</li>
-            <li>Is exclusive: {item.is_exclusive}</li>
-            <li>Vehicle Type: {item.car_type}</li>
-            <li>Special info: {item.special_info}</li>
-            <button id="join_" @click="join(item.id)">Join</button>
-        </ul>
-    </div>
+        <div id="result">
+            You found {orders.length} orders.<br>
+            <ul v-for='item in orders'>
+                <li>Order ID: {item.id}</li>
+                <li>Destination: {item.destination}</li>
+                <li>Passenger Number: {item.passenger_num}</li>
+                <li>Vehicle Type: {item.car_type}</li><br>
+                <li>Arrival Time: {item.arrival_time}</li>
+                
+                
+                <li>Special info: {item.special_info}</li><br>
+                <button id="join_" @click="join(item.id)">Join</button>
+            </ul>
+        </div>
     </div>
     <script>
         var app = new Vue({

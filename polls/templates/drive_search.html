@@ -26,6 +26,7 @@
             width: 800px;
             border-bottom: 1px solid gray;
             font-size: 21px;
+            padding-bottom: 40px;
         }
         button {
             background-color: black;
@@ -42,25 +43,33 @@
         }
         #result {
             margin-top: 50px;
-            height: 500px;
             background-color: white;
+            padding-bottom: 40px;
         }
-        ul {
+        #result>ul {
             font-size: 20px;
             list-style: none;
-            width: 800px;
-            border: 1px solid gray;
-            margin-left: 0px;
+            width: 760px;
+            border: 2px solid gray;
+            margin-left: 5px;
             border-radius: 10px;
             margin-top: 20px;
+            padding-left: 20px;
+            padding-top: 20px;
         }
-        li {
+        ul>li {
             display: inline;
+            margin-left: 22px;
         }
         #confirm_ {
             font-size: 20px;
             width: 200px;
             height: 50px;
+            width: 96%;
+            margin-left: 8px;
+            padding: auto;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -74,12 +83,12 @@
     <div id="result">
         You found {orders.length} orders.<br>
         <ul v-for='(item, i) in orders'>
-            <li>Order ID: {item.order_id}</li>
-            <li>Arrival Time: {item.arrival_time}</li>
-            <li>Passenger Number: {item.passenger_num}</li>
-            <li>Is exclusive: {item.is_exclusive}</li>
-            <li>Vehicle Type: {item.car_type}</li>
-            <li>Special info: {item.special_info}</li>
+            <li>Order ID: {item.order_id}</li>&nbsp;
+            <li>Dest.: {item.destination}</li>&nbsp;
+            <li>Arr. Time: {item.arrival_time}</li>&nbsp;
+            <li>Passenger No.: {item.passenger_num}</li><br>
+            <li>Vehicle Type: {item.car_type}</li>&nbsp;&nbsp;
+            <li>Special info: {item.special_info}</li><br>
             <button id="confirm_" @click="confirm(item.order_id)">Confirm</button>
         </ul>
     </div>

@@ -17,7 +17,9 @@
             
         }
         #request {
-            margin-top: 30px;
+            padding-top: 20px;
+            margin-top: 50px;
+            line-height: 40px;
             margin-left: 240px;
             width: 60%;
             text-align: center;
@@ -59,6 +61,9 @@
             vertical-align: middle;
   
         }
+        li {
+            list-style: None;
+        }
 
         #num {
             text-align: center;
@@ -68,27 +73,18 @@
 <body>
     <div id="secret_signup">
         <div id="app">
-            <h2>Ride Information</h2>
+            <h2>Ride Details</h2>
             <div id="request">
-                Destination: &nbsp;<input type="text" v-model="destination" required maxlength="50"><br>
-                Arrival Time: &nbsp;<input type="datetime-local" v-model= "arrival_time" required><br>
-                Passenger Number: &nbsp;<input type="number" v-model="passenger_num"required max="500" id="num"><br>
-                Do you want a shared ride? &nbsp;
-                <select v-model="is_exclusive" required>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </select><br>
-                Do you have any requirement on vehicle type? &nbsp;<select type="text" v-model="car_type" required>
-                    <option selected value="Unspecified">Unspecified</option>
-                    <option value="Sedan">Sedan</option>
-                    <option value="SUV">SUV</option>
-                    <option value="Sports Car">Sports Car</option>
-                    <option value="Convertible">Convertible</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Minivan">Minivan</option>
-                </select><br>
-                Special Info: &nbsp;<textarea v-model="special_info"></textarea><br>
-                <button @click="request">Request a Ride Now</button>
+                <li>Order No: #{order_id}</li> 
+                <li>Dest.: {destination}</li> 
+                <li>Arr. Time: {arrival_time}</li>
+                <li>Order Status: {status}</b></li>
+                <li>Is Exclusive: {is_exclusive}</li>
+                <li>Sharer Number: {sharer_num}</li>
+                <li>Total Passengers: {passenger_num}</li>
+                <li>Vehicle Type: {car_type}</li>
+                <li>Special Info: {special_info}</li>
+                <button @click="edit">Edit Request</button>
             </div>
           
             
@@ -99,6 +95,7 @@
     <script>
         var app = new Vue({
             el:"#app",
+            delimiters: ['{', '}'],
             data:{
                 destination: '',
                 arrival_time: '',
@@ -106,28 +103,39 @@
                 is_exclusive: "No",
                 car_type:'Unspecified',
                 special_info: '',
+                order_id: '',
+                sharer_num: 0,
+                status: "",
             },
-            methods: {
-                request: function() {
-                    that = this;
-                    if (that.destination == '') {
-                        alert('Destination cannot be empty!')
-                        return
-                    }
-                    if (that.arrival_time == '') {
-                        alert("Arrival time cannot be empty!")
-                        return
-                    }
-                    if (that.passenger_num <= 0 || that.passenger_num > 500) {
-                        alert("Please enter a valid passenger number!")
-                        return
-                    }
-                    axios.get("/request/"+that.destination+"/"+that.arrival_time+"/"+that.passenger_num+"/"+that.is_exclusive+"/"+that.car_type+"/"+that.special_info).then(function(response) {
-                        if (response.data.status_code != 0) {
+            mounted: function() {
+                that = this
+                axios.get("aux_get_order_info__view").then(function(response) {
+                        if (response.data.status_code == 1) {
                             alert("Please log in first!")
                         } else {
-                            alert("Order has been published!")
-                            location.href = "/orders.html"
+                            that.order_id = response.data[0].pk
+                            console.log(response.data[0].fields)
+                            that.status = "Open"
+                            that.destination = response.data[0].fields.destination
+                            that.arrival_time = response.data[0].fields.arrival_time
+                            that.passenger_num = response.data[0].fields.passenger_num
+                            that.is_exclusive = response.data[0].fields.is_exclusive ? "Yes" : "No"
+                            that.car_type = response.data[0].fields.car_type
+                            that.special_info = response.data[0].fields.special_info
+                            that.sharer_num = response.data[0].fields.sharer_num
+                        }
+                    }).catch(function(err) {
+                        alert('Error');
+                    });
+            },
+            methods: {
+                edit: function() {
+                    that = this;
+                    axios.get("edit/"+that.order_id).then(function(response) {
+                        if (response.data.status_code == 1) {
+                            alert("Please log in first!")
+                        } else {
+                            location.href = "/edit_order.html"
                         }
                     }).catch(function(err) {
                         alert('Error');
