@@ -181,6 +181,9 @@
                     if (response.data.status_code == 1) {
                         alert("Please log in first!");
                         location.href = "login.html"
+                    } else if (response.data.status_code == 3){
+                        alert("This order has been completed, invalid join!")
+                        return; 
                     } else {
                         alert("Joined!")
                         location.href = "orders.html"

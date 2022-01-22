@@ -6,7 +6,7 @@ from django.core import serializers
 from datetime import datetime
 from django.db.models import Q
 from django.core.mail import send_mail
-
+from threading import Thread
 def user_has_logged_in(request):
     return 'username' in request.session
 def string_to_datetime(string):
@@ -99,6 +99,8 @@ def join(request, order_id, passenger_num):
         return JsonResponse({"status_code":1})
     user = User.objects.get(username = request.session['username'])
     ride = Ride.objects.get(pk = order_id)
+    if ride.status > 3:
+        return JsonResponse({"status_code":3})
     transaction = Transaction(user = user, ride = ride, role = True, request_time = datetime.now(), passenger_num = passenger_num)
     ride.status = 2
     ride.passenger_num += passenger_num
@@ -110,23 +112,31 @@ def join(request, order_id, passenger_num):
     ride.save()
     transaction.save()
     return HttpResponse()
+def async_send_emails(transactions):
+    try:
+        for transaction in transactions:
+            send_mail('[WeRide]: Your order is confirmed!', 'Dear ' + transaction.user.username + ',\n\n    Your order to ' + transaction.ride.destination+' has just been confirmed, enjoy your trip!\n\nWeRide Team', '2356184200@qq.com', [transaction.user.email], fail_silently=False,)
+    except:
+        print("Email connection refused")
+
+
 def confirm(request, order_id):
     if not user_has_logged_in(request):
         return JsonResponse({"status_code":1})
     user = User.objects.get(username = request.session['username'])
     if not user.is_driver:
         return JsonResponse({"status_code":2})
+    ride = Ride.objects.get(pk = order_id)
+    if ride.status > 3:
+        return JsonResponse({"status_code"})
     driver = Driver.objects.get(user_id = user.id)
     driver.number_of_incomplete_orders += 1
-    ride = Ride.objects.get(pk = order_id)
     ride.status = 4
     ride.driver = driver
     transactions = Transaction.objects.filter(ride = ride)
-    try:
-        for transaction in transactions:
-            send_mail('[WeRide]: Your order is confirmed!', 'Dear ' + transaction.user.username + ',\n\n    Your order to ' + transaction.ride.destination+' has just been confirmed, enjoy your trip!\n\nWeRide Team', '2356184200@qq.com', [transaction.user.email], fail_silently=False,)
-    except:
-        pass
+    t = Thread(target = async_send_emails, args = [transactions,])
+    t.start()
+    #async_send_emails(transactions)
     ride.save()
     driver.save()
     return HttpResponse()
@@ -201,6 +211,28 @@ def edit(request, order_id):
     if not user_has_logged_in(request):
         return JsonResponse({"status_code":1})
     request.session['order_to_be_edited'] = order_id
+    return HttpResponse()
+def cancel(request, order_id):
+    if not user_has_logged_in(request):
+        return JsonResponse({"status_code":1})
+    user = User.objects.get(username = request.session['username'])
+    order = Ride.objects.get(pk = order_id)
+    if order.status == 4:
+        return JsonResponse({"status_code":3})
+    if order.status == 0:
+        return JsonResponse({"status_code":4})
+    cancelled_transaction = Transaction.objects.get(user = user, ride = order)
+    if cancelled_transaction.role:
+        order.sharer_num -= 1
+        order.passenger_num -= cancelled_transaction.passenger_num
+        order.save()
+        cancelled_transaction.delete()
+        return HttpResponse()
+    transactions = Transaction.objects.filter(ride = order)
+    order.status = 0
+    for transaction in transactions:
+        transaction.delete()
+    order.save()
     return HttpResponse()
 def edit_order_html(request):
     if not user_has_logged_in(request):

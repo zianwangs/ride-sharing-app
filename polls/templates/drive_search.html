@@ -143,6 +143,9 @@
                     } else if (response.data.status_code == 2){
                         alert("You are not a driver yet, please register first!")
                         location.href = "driver_register.html"
+                    } else if (response.data.status_code == 3){
+                        alert("This order has been confirmed, do not confirm twice!")
+                        return; 
                     } else {
                         alert("Order confirmed!")
                         location.href = "drive_orders.html"

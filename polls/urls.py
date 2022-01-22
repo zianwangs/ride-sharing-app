@@ -50,4 +50,5 @@ urlpatterns = [
     path('open_order_details.html', views.open_order_details_html, name = 'open_order_details_html'),
     path('confirmed_order_details.html', views.confirmed_order_details_html, name = 'confirmed_order_details_html'),
     path('driver_order_details.html', views.driver_order_details_html, name = 'driver_order_details_html'),
+    path('cancel/<int:order_id>', views.cancel, name = "cancel"),
 ]
